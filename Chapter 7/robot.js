@@ -12,7 +12,7 @@ const roads = [
 function buildGraph(edges){
     let graph = Object.create(null); //In this way i have no inherited properties (0 properties)
     function addEdge(from,to){
-        if(graph[from]==null){ //If the "from" poperties doesn't exist i create a new one
+        if(graph[from]==null){ //If the "from" properties doesn't exist i create a new one
             graph[from] = [to]; //and i insert a new array with the "to" element inside
         }
         else{
@@ -216,7 +216,7 @@ runRobot(villagestate,randomRobot);
 console.log("Testing route robot");
 runRobot(villagestate,routeRobot,[]); //More efficient
 console.log("Testing goal oriented robot");
-runRobot(villagestate,goalOrientedRobot,[]); //More efficent then the previous solution
+runRobot(villagestate,goalOrientedRobot,[]); //More efficient then the previous solution
 console.log("Testing lazy  robot");
 runRobot(villagestate,lazyRobot,[]); //Best solution
 compareRobots(routeRobot, [], goalOrientedRobot, []); //Exercise 19
