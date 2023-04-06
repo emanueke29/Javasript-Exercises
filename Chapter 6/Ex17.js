@@ -24,12 +24,12 @@ class Group {
       }
       return group;
     }
-  
+    //Solution 1
     [Symbol.iterator]() {
       return new GroupIterator(this);
     }
 }
-  
+  //Solution 1 
   class GroupIterator {
     constructor(group) {
       this.group = group;
@@ -47,6 +47,14 @@ class Group {
       }
     }
   }
+
+//Solution 2 //Using generators
+
+// Group.prototype[Symbol.iterator] = function*() {
+//   for (let i = 0; i < this.members.length; i++) {
+//     yield this.members[i];
+//   }
+// };
   
   for (let value of Group.from(["a", "b", "c"])) {
     console.log(value);
