@@ -20,11 +20,11 @@ function parseExpression(program) {
     return parseApply(expr, program.slice(match[0].length));
 }
 
-function skipSpace(string){
-    let first = string.search(/\S/);
-    if(first==-1) return "";
-    return string.slice(first);
-}
+function skipSpace(string) {
+    //Skipping comments and white spaces
+    let skippable = string.match(/^(\s|#.*)*/);
+    return string.slice(skippable[0].length);
+  }
 
 function parseApply(expr, program) {
     program = skipSpace(program);
@@ -215,3 +215,68 @@ run(`
         print(pow(2, 10)))
 `);
 // → 1024
+
+//Exercise 27
+
+topScope.array = (...values) => values; //it returns the array
+
+topScope.length = (array) => array.length;
+
+topScope.element = (array,i) => array[i];
+
+run(`
+do(define(sum, fun(array,
+     do(define(i, 0),
+        define(sum, 0),
+        while(<(i, length(array)),
+          do(define(sum, +(sum, element(array, i))),
+             define(i, +(i, 1)))),
+        sum))),
+   print(sum(array(1, 2, 3))))
+`);
+// → 6
+
+//Exercise 28
+
+run(`
+    do(define(f, fun(a, fun(b, +(a, b)))),
+        print(f(4)(5)))
+`);
+//Answer: let localScope = Object.create(scope);
+// → 9
+
+//Exercise 29
+//Modifying skipSpace()
+console.log(parse("# hello\nx"));
+// → {type: "word", name: "x"}
+
+//Exercise 30
+
+specialForms.set = (args, env) => {
+    //Checking syntax
+    if (args.length != 2 || args[0].type != "word") {
+      throw new SyntaxError("Bad use of set");
+    }
+    let varName = args[0].name;
+    let value = evaluate(args[1], env);
+  
+    //Searching in parents'scopes if the variable is defined
+    //Condition is scope because it can be: true, null or undefined
+    for (let scope = env; scope; scope = Object.getPrototypeOf(scope)) {
+      if (Object.prototype.hasOwnProperty.call(scope, varName)) {
+        scope[varName] = value;
+        return value;
+      }
+    }
+    throw new ReferenceError(`Setting undefined variable ${varName}`);
+};
+
+run(`
+do(define(x, 4),
+   define(setx, fun(val, set(x, val))),
+   setx(50),
+   print(x))
+`);
+// → 50
+run(`set(quux, true)`);
+// → Some kind of ReferenceError
