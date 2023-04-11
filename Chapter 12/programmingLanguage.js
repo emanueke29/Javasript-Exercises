@@ -79,6 +79,7 @@ function evaluate(expr,scope){
         else{
             let op = evaluate(operator,scope);
             if(typeof op == "function"){
+                //"op" operation executed on "...args" array
                 return op(...args.map(arg=> evaluate(arg,scope)));
             }
             else{
@@ -156,6 +157,37 @@ topScope.print = value => {
 function run(program){
     return evaluate(parse(program),Object.create(topScope));
 }
+
+//Functions
+
+specialForms.fun = (args,scope) =>{
+    if(!args.length){
+        throw new SyntaxError ("Function need a body");
+    }
+    //Body is the last arg of the function
+    let body = args[args.length - 1];
+    //Parameters are all the elements before the body in the function
+    //All parameters must be words
+    let params = args.slice(0,args.length - 1).map(expr=>{
+        if(expr.type != "word"){
+            throw new SyntaxError("Parameter names must be words");
+        }
+        return expr.name;
+    });
+
+    return function(){
+        if(arguments.length != params.length){
+            throw new TypeError("Wrong number of arguments");
+        }
+        //Creating the fresh local scope of the function
+        let localScope = Object.create(scope);
+        for(let i=0;i<arguments.length;i++){
+            localScope[params[i]] = arguments[i];
+        }
+        //Executing the function
+        return evaluate(body,localScope);
+    }
+}
 //Testing
 console.log(parse("+(a,10)"));
 let prog = parse('if(true,false,true)');
@@ -169,3 +201,17 @@ do(define(total, 0),
    print(total))
 `);
 // → 55
+
+run(`
+    do(define(plusOne, fun(a, +(a, 1))),
+        print(plusOne(10)))
+    `);
+// → 11
+run(`
+    do(define(pow, fun(base, exp,
+        if(==(exp, 0),
+            1,
+            *(base, pow(base, -(exp, 1)))))),
+        print(pow(2, 10)))
+`);
+// → 1024
