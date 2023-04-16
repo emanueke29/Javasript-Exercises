@@ -1,0 +1,56 @@
+<!doctype html>
+
+<h1>Mountains</h1>
+
+<div id="mountains"></div>
+
+<script>
+  const MOUNTAINS = [
+    {name: "Kilimanjaro", height: 5895, place: "Tanzania"},
+    {name: "Everest", height: 8848, place: "Nepal"},
+    {name: "Mount Fuji", height: 3776, place: "Japan"},
+    {name: "Vaalserberg", height: 323, place: "Netherlands"},
+    {name: "Denali", height: 6168, place: "United States"},
+    {name: "Popocatepetl", height: 5465, place: "Mexico"},
+    {name: "Mont Blanc", height: 4808, place: "Italy/France"}
+  ];
+
+  // Your code here
+  let flag = false;
+  let div = document.getElementById("mountains");
+  //div.document.appendChild("table");
+  let table = document.createElement("table");
+  for(m of MOUNTAINS){
+    let columns = Object.keys(m);
+    let headRow = document.createElement("tr");
+    if(!flag){
+        flag = true;
+        let headRow1 = document.createElement("tr");
+        for(c of columns){
+            let headCell = document.createElement("th");
+            let regCell = document.createElement("td");
+            headCell.appendChild(document.createTextNode(c));
+            regCell.appendChild(document.createTextNode(m[c]));
+            headRow.appendChild(headCell);
+            headRow1.appendChild(regCell);
+            if(typeof m[c] == "number"){
+            regCell.style.textAlign = "right";
+        }
+        }
+        table.appendChild(headRow);
+        table.appendChild(headRow1);
+        continue;
+        
+    }
+    for(c of columns){
+        let regCell = document.createElement("td");
+        regCell.appendChild(document.createTextNode(m[c]));
+        headRow.appendChild(regCell);
+        if(typeof m[c] == "number"){
+            regCell.style.textAlign = "right";
+        }
+    }
+    table.appendChild(headRow);
+  }
+  div.appendChild(table);
+</script>
