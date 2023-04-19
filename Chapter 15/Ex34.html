@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+
+<p>🎈</p>
+
+<script>
+
+let p = document.body.querySelector("p");
+let size;
+const explSize = 100;
+setSize(20);
+function setSize(newSize){
+    size = newSize;
+    p.style.fontSize = newSize + "px";
+}
+window.addEventListener("keydown",handle_ballon);
+
+function handle_ballon(event){
+    if(event.key == "ArrowUp" && size < explSize){
+        event.preventDefault(); //Prevent default only when a key is pressed
+        setSize(1.1*size);
+    }
+    else if(event.key == "ArrowDown"){
+        event.preventDefault(); //Prevent default only when a key is pressed
+        setSize(0.9*size);
+    }
+    else{
+        p.textContent = "💥";
+        window.removeEventListener("keydown",handle_ballon);
+    }
+
+}
+
+</script>
