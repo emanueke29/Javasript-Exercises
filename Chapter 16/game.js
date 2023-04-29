@@ -456,11 +456,22 @@ function runLevel(level,Display){
     })
 }
 
+const lives = 3; 
 async function runGame(plans,Display){
+    let n = lives;
     for(let level = 0; level < plans.length;){
+        console.log(`Level ${level+1}, lives: ${n}`);
+        if(n == 0){
+            console.log("Game Over");
+            level = 0; 
+            n = 3;
+        }
         let status = await runLevel(new Level(plans[level]),Display);
         if(status == "won"){
             level++;
+        }
+        else if(status == "lost"){
+            n--;
         }   
     }
     console.log("You've won!");
