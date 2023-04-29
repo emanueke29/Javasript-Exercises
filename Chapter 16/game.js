@@ -342,7 +342,7 @@ Lava.prototype.collide = function(state){
 
 Monster.prototype.collide = function(state){
     let p = state.player;
-    //No collision if the player arrives from the top to the monster
+    //No collision if the player arrive from the top to the monster
     if (p.pos.y + p.size.y < this.pos.y + 0.5) {
         let filtered = state.actors.filter(a => a != this);
         return new State(state.level, filtered, state.status);
@@ -530,7 +530,7 @@ function runLevel(level, Display) {
     });
   }
 
-const lives = 3; 
+const lives = 10; 
 async function runGame(plans,Display){
     let n = lives;
     for(let level = 0; level < plans.length;){
