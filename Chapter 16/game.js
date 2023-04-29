@@ -115,6 +115,7 @@ var Lava = class Lava{
         }
     }
 }
+
 //Steady lava size
 Lava.prototype.size = new Vec(1,1);
 
@@ -145,6 +146,26 @@ var Coin = class Coin{
 //Steady coin size
 Coin.prototype.size = new Vec(0.6,0.6);
 
+
+//Monster
+
+var Monster = class Monster{
+    constructor(pos, speed){
+        this.pos = pos;
+        this.speed = speed;
+    }
+
+    get type(){
+        return "monster";
+    }
+
+    static create(pos){
+        return new Monster(pos.plus(new Vec(0,-0.5)),new Vec(2,0));
+    }
+}
+//Steady monster size
+Monster.prototype.size = new Vec(1.2,1.5);
+
 //Level chars
 
 const levelChars = {
@@ -155,7 +176,8 @@ const levelChars = {
     "@":Player,
     "=":Lava,
     "|":Lava,
-    "v":Lava
+    "v":Lava,
+    "m":Monster
 };
 
 //Drawing
@@ -318,6 +340,18 @@ Lava.prototype.collide = function(state){
     return new State(state.level,state.actors,"lost");
 }
 
+Monster.prototype.collide = function(state){
+    let p = state.player;
+    //No collision if the player arrives from the top to the monster
+    if (p.pos.y + p.size.y < this.pos.y + 0.5) {
+        let filtered = state.actors.filter(a => a != this);
+        return new State(state.level, filtered, state.status);
+      } 
+      else {
+        return new State(state.level, state.actors, "lost");
+      }
+}
+
 Coin.prototype.collide = function(state){
     let filtered = state.actors.filter(a => a != this);
     let status = state.status;
@@ -345,6 +379,18 @@ Lava.prototype.update = function(time,state){
     //Bouncing lava -> inverts its speed
     else{
         return new Lava(this.pos,this.speed.times(-1));
+    }
+}
+
+//->
+
+Monster.prototype.update = function(time,state){
+    let newPos = this.pos.plus(this.speed.times(time));
+    if(!state.level.touches(newPos,this.size,"wall")){
+        return new Monster(newPos,this.speed);
+    }
+    else{
+        return new Monster(this.pos,this.speed.times(-1));
     }
 }
 
@@ -399,19 +445,24 @@ Player.prototype.update = function(time,state,keys){
 
 //Tracking keys
 
-function trackKeys(keys){
-    //Keys actually down
+function trackKeys(keys) {
+    //Keys actually down 
     let down = Object.create(null);
-    function track(event){
-        if(keys.includes(event.key)){
-            down[event.key] = event.type == "keydown";
-            event.preventDefault();
-        }
+    function track(event) {
+    if (keys.includes(event.key)) {
+        down[event.key] = event.type == "keydown";
+        event.preventDefault();
+      }
     }
-    window.addEventListener("keydown",track);
-    window.addEventListener("keyup",track);
+    window.addEventListener("keydown", track);
+    window.addEventListener("keyup", track);
+    //Track keys events only when necessary
+    down.unregister = () => {
+        window.removeEventListener("keydown", track);
+        window.removeEventListener("keyup", track);
+    };
     return down;
-}
+  }
 //Possible usable keys
 const arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
 //                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -> allowed keys
@@ -432,29 +483,52 @@ function runAnimation(frameFunc){
 
 }
 
-function runLevel(level,Display){
-    let display = new Display(document.body,level);
+function runLevel(level, Display) {
+    let display = new Display(document.body, level);
     let state = State.start(level);
     let ending = 1;
+    let running = "yes";
+
     return new Promise(resolve => {
-        runAnimation(time => {
-            state = state.update(time,arrowKeys);
-            display.syncState(state);
-            if(state.status == "playing"){
-                return true;
+        //Esc handler
+        function escHandler(event) {
+            if (event.key != "Escape") return;
+            event.preventDefault();
+            if (running == "no") {
+                running = "yes";
+                runAnimation(frame);
+            } else if (running == "yes") {
+                running = "pausing";
+            } else {
+                running = "yes";
             }
-            else if(ending > 0){
+        }
+        window.addEventListener("keydown", escHandler);
+        let arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
+
+        function frame(time) {
+            if (running == "pausing") {
+                running = "no";
+                return false;
+            }
+            state = state.update(time, arrowKeys);
+            display.syncState(state);
+            if (state.status == "playing") {
+                return true;
+            } else if (ending > 0) {
                 ending -= time;
                 return true;
-            }
-            else{
+            } else {
                 display.clear();
+                window.removeEventListener("keydown", escHandler);
+                arrowKeys.unregister();
                 resolve(state.status);
                 return false;
             }
-        })
-    })
-}
+        }
+      runAnimation(frame);
+    });
+  }
 
 const lives = 3; 
 async function runGame(plans,Display){

@@ -25,6 +25,10 @@
 .player { 
     background: rgb(64, 64, 64);   
 }
+
+.monster{
+    background:rgb(116, 72, 26);
+}
 /*Color change possible because there is current status level as a class*/
 .lost .player {
     background: rgb(160,64,64);
