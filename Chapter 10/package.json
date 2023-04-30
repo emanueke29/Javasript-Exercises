@@ -1,0 +1,8 @@
+{
+  "name": "robot",
+  "version": "1.0.0",
+  "description": "Simulation of a package-delivery robot",
+  "main": "run.js",
+  "author": "Emanuele Coricciati",
+  "license": "ISC"
+}
